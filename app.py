@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request, render_template, send_from_directory, jsonify
 from PIL import Image
 import fitz  # PyMuPDF for PDF processing
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -266,4 +267,8 @@ def serve_uploaded_file(filename):
 if __name__ == '__main__':
     # Initial cleanup on startup
     cleanup_old_files()
+
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
     app.run(debug=False)  # Set debug=False for production
