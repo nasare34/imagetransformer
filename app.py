@@ -266,4 +266,4 @@ def serve_uploaded_file(filename):
 if __name__ == '__main__':
     # Initial cleanup on startup
     cleanup_old_files()
-    app.run(debug=True)  # Set debug=False for production
+    app.run(debug=False)  # Set debug=False for production
