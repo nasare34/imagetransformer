@@ -1,5 +1,4 @@
 absl-py==2.1.0
-aiohttp @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_8ciawlb4d5/croot/aiohttp_1701101385477/work
 aiosignal @ file:///tmp/build/80754af9/aiosignal_1637843061372/work
 alabaster @ file:///home/ktietz/src/ci/alabaster_1611921544520/work
 alembic==1.13.2
