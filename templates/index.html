@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer & Quality Adjuster</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #8e2de2, #4a00e0); /* Vibrant gradient background */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Stack header, main content, footer */
+            align-items: center;
+            justify-content: center; /* Center content vertically */
+            padding: 1rem; /* Add back some padding for overall layout */
+            overflow-x: hidden; /* Prevent horizontal scroll due to animations */
+        }
+
+        /* Top Navigation Bar (now the main header) */
+        .top-nav {
+            width: 100%;
+            background: linear-gradient(to right, #6366f1, #4f46e5); /* Indigo gradient */
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center title */
+            margin-bottom: 2rem; /* Space below the top bar */
+            border-radius: 0.75rem; /* Rounded corners for the top bar */
+        }
+        .top-nav .site-title {
+            font-size: 2rem; /* Slightly larger title */
+            font-weight: 700;
+        }
+
+        /* Main Content Area - now directly centers the card */
+        .content-area {
+            flex-grow: 1; /* Allow card to grow and push footer down */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align card to top within its flex container */
+            width: 100%; /* Take full width */
+        }
+
+        /* Custom styles for better aesthetics and "3D" feel */
+        .card {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08); /* Deeper shadow */
+            padding: 3rem;
+            transform-style: preserve-3d; /* Enable 3D transformations for children */
+            perspective: 1000px;
+            transition: transform 0.3s ease-in-out;
+            animation: fadeInScale 0.8s ease-out forwards; /* Card entry animation */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateY(20px) scale(0.98); /* Start slightly down and scaled */
+            width: 100%; /* Ensure card takes full width of its container */
+            max-width: 48rem; /* Max width for content within the card */
+            margin-bottom: 2rem; /* Space between card and footer */
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.0); /* Subtle lift on hover */
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #6366f1, #4f46e5); /* Gradient button */
+            color: white;
+            padding: 0.85rem 1.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, #4f46e5, #4338ca); /* Darker gradient on hover */
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #e0e7ff; /* Indigo 100 */
+            color: #4f46e5; /* Indigo 600 */
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #c7d2fe; /* Indigo 200 */
+        }
+        .btn-secondary:hover {
+            background-color: #c7d2fe; /* Indigo 200 */
+            transform: translateY(-1px);
+        }
+        .input-field {
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.25rem;
+            width: 100%;
+            background-color: #f8fafc; /* Slate 50 */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out; /* Added transform */
+        }
+        .input-field:focus {
+            border-color: #6366f1; /* Indigo 500 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Focus ring */
+            outline: none;
+            transform: translateY(-2px); /* Subtle lift on focus */
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            cursor: pointer;
+            color: #4a5568; /* Gray 700 */
+            border: 2px solid transparent; /* Add border for active state */
+            border-radius: 0.75rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .radio-group label.active-radio {
+            border-color: #4f46e5; /* Indigo 600 */
+            background-color: #e0e7ff; /* Indigo 100 */
+            box-shadow: 0 2px 5px rgba(79, 70, 229, 0.2);
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 0.75rem;
+            accent-color: #4f46e5; /* Indigo for radio buttons */
+            transform: scale(1.1); /* Slightly larger radio buttons */
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3); /* Lighter grey */
+            border-top: 4px solid white; /* White spinner */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .section-heading {
+            border-bottom: 2px solid #e0e7ff; /* Light indigo border */
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #374151; /* Gray 700 */
+            animation: slideInFromLeft 0.6s ease-out forwards; /* Heading animation */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateX(-20px); /* Start off-screen */
+        }
+        /* Delay for subsequent headings */
+        .section-heading:nth-of-type(2) { animation-delay: 0.1s; }
+        .section-heading:nth-of-type(3) { animation-delay: 0.2s; }
+        .section-heading:nth-of-type(4) { animation-delay: 0.3s; }
+
+        .preset-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #f1f5f9; /* Slate 100 */
+            color: #475569; /* Slate 700 */
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #e2e8f0; /* Slate 200 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.5s ease-out forwards; /* Preset button animation */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateY(10px); /* Start slightly down */
+        }
+        .preset-button:hover {
+            background-color: #e2e8f0; /* Slate 200 */
+            color: #334155; /* Slate 800 */
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .preset-button.active-preset { /* New style for active preset button */
+            border-color: #4f46e5; /* Indigo 600 */
+            background-color: #c7d2fe; /* Indigo 200 */
+            box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+            transform: translateY(-2px);
+        }
+        .preset-button i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #4f46e5; /* Indigo 600 */
+        }
+        .message-box {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .result-container-animation {
+            animation: fadeInSlideUp 0.7s ease-out forwards; /* Result container animation */
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Delay for preset buttons */
+        .preset-button:nth-child(1) { animation-delay: 0.4s; }
+        .preset-button:nth-child(2) { animation-delay: 0.5s; }
+        .preset-button:nth-child(3) { animation-delay: 0.6s; }
+        .preset-button:nth-child(4) { animation-delay: 0.7s; }
+        /* Add more delays if you add more buttons */
+
+        /* Footer specific styles */
+        footer {
+            width: 100%;
+            max-width: 48rem; /* Match card max-width for alignment */
+            margin-top: 2rem; /* Space between card and footer */
+            padding: 1rem; /* Add padding to footer */
+        }
+        .ad-placeholder {
+            background-color: #e0e7ff; /* Light indigo background for ad areas */
+            border: 1px dashed #a5b4fc; /* Dashed border for visual distinction */
+            color: #4f46e5; /* Indigo text */
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px; /* Ensure enough height for ads */
+            font-weight: 600;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+        }
+
+        /* FAQ specific styles */
+        .faq-item {
+            border-bottom: 1px solid #e0e7ff; /* Light indigo border */
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .faq-item:last-child {
+            border-bottom: none; /* No border for the last item */
+        }
+        .faq-question {
+            font-weight: 600;
+            color: #374151; /* Gray 700 */
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            color: #4a5568; /* Gray 700 */
+            margin-top: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .faq-answer.open {
+            max-height: 200px; /* Adjust as needed for content length */
+            opacity: 1;
+        }
+        .faq-icon {
+            transition: transform 0.3s ease-out;
+        }
+        .faq-icon.rotate {
+            transform: rotate(180deg);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar (now just a header) -->
+    <header class="top-nav">
+        <h1 class="site-title"> Image Transformer</h1>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="card w-full max-w-3xl">
+            <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-4">
+                Welcome to Image Transformer!
+            </h1>
+            <p class="text-xl text-center text-gray-600 mb-10">
+                Your go-to site to resize, reduce, or increase the size and resolution of all your images, and convert between PDF and image formats.
+            </p>
+
+            <form id="imageForm" class="space-y-8">
+                <!-- Upload Section (always visible) -->
+                <div id="upload-section">
+                    <h2 class="text-2xl font-semibold section-heading mb-4">Upload File</h2>
+                    <label for="fileInput" class="block text-lg font-medium text-gray-700 mb-2">
+                        Select a file
+                    </label>
+                    <input type="file" id="fileInput" name="file" class="input-field">
+                    <p class="text-sm text-gray-500 mt-2" id="fileTypeHint">Upload an image to get started.</p>
+                </div>
+
+                <!-- Operation Type Selection (initially hidden, shown after file upload) -->
+                <div id="operationSelectionSection" class="hidden">
+                    <h2 class="text-2xl font-semibold section-heading mb-4">Choose Operation</h2>
+                    <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
+                        <label>
+                            <input type="radio" name="operation_type" value="resize_image">
+                            <span>Resize Image</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="operation_type" value="pdf_to_image">
+                            <span>PDF to Image</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="operation_type" value="image_to_pdf">
+                            <span>Image to PDF</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Image Resize Options (Initially hidden) -->
+                <div id="imageResizeOptions" class="hidden">
+                    <h2 class="text-2xl font-semibold section-heading mb-4">Image Resizing Options</h2>
+                    <p class="text-gray-600 mb-4">Easily resize for popular social media platforms or define custom dimensions.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                        <button type="button" class="preset-button" data-width="1280" data-height="720" data-name="YouTube Thumbnail">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube Thumbnail</span>
+                            <span class="text-xs text-gray-500 mt-1">1280x720px</span>
+                        </button>
+                        <button type="button" class="preset-button" data-width="1080" data-height="1080" data-name="Instagram Square">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram Square</span>
+                            <span class="text-xs text-gray-500 mt-1">1080x1080px</span>
+                        </button>
+                        <button type="button" class="preset-button" data-width="1080" data-height="1920" data-name="TikTok Video">
+                            <i class="fab fa-tiktok"></i>
+                            <span>TikTok Video</span>
+                            <span class="text-xs text-gray-500 mt-1">1080x1920px</span>
+                        </button>
+                        <button type="button" class="preset-button" data-width="1200" data-height="630" data-name="Facebook Post">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook Post</span>
+                            <span class="text-xs text-gray-500 mt-1">1200x630px</span>
+                        </button>
+                        <!-- Add more presets as needed -->
+                    </div>
+
+                    <h3 class="text-xl font-medium text-gray-700 mb-4">Custom Resizing</h3>
+                    <p class="text-gray-600 mb-4">Define your own dimensions or scale by percentage.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="widthInput" class="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                            <input type="number" id="widthInput" name="width" class="input-field" placeholder="e.g., 800">
+                            <p class="text-xs text-gray-500 mt-1">Sets the desired width in pixels.</p>
+                        </div>
+                        <div>
+                            <label for="heightInput" class="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                            <input type="number" id="heightInput" name="height" class="input-field" placeholder="e.g., 600">
+                            <p class="text-xs text-gray-500 mt-1">Sets the desired height in pixels.</p>
+                        </div>
+                        <div>
+                            <label for="percentageInput" class="block text-sm font-medium text-gray-700 mb-1">Percentage (%)</label>
+                            <input type="number" id="percentageInput" name="percentage" class="input-field" placeholder="e.g., 50">
+                            <p class="text-xs text-gray-500 mt-1">Scales the image by a percentage of its original size (e.g., 50 for half, 200 for double).</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Enter dimensions or a percentage. Percentage takes precedence if both are provided.</p>
+
+                    <h3 class="text-xl font-medium text-gray-700 mt-8 mb-4">Quality Settings</h3>
+                    <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
+                        <label>
+                            <input type="radio" name="quality_mode" value="lossless" checked>
+                            <span>Lossless (PNG)</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="quality_mode" value="lossy">
+                            <span>Lossy (JPEG)</span>
+                        </label>
+                    </div>
+
+                    <div id="jpegQualityContainer" class="hidden">
+                        <label for="jpegQuality" class="block text-sm font-medium text-gray-700 mb-1">JPEG Quality (1-95)</label>
+                        <input type="range" id="jpegQuality" name="jpeg_quality" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg" value="85" min="1" max="95">
+                        <span id="jpegQualityValue" class="block text-center text-sm text-gray-600 mt-2">85</span>
+                    </div>
+                </div>
+
+                <!-- PDF to Image Options (Hidden by default) -->
+                <div id="pdfToImageOptions" class="hidden">
+                    <h2 class="text-2xl font-semibold section-heading mb-4">PDF to Image Options</h2>
+                    <p class="text-gray-600 mb-4">Each page of your PDF will be converted into a separate image file (PNG).</p>
+                    <!-- No specific options needed here for simplicity, conversion is direct -->
+                </div>
+
+                <!-- Image to PDF Options (Hidden by default) -->
+                <div id="imageToPdfOptions" class="hidden">
+                    <h2 class="text-2xl font-semibold section-heading mb-4">Image to PDF Options</h2>
+                    <p class="text-gray-600 mb-4">Your image will be converted into a single-page PDF document.</p>
+                    <!-- No specific options needed here for simplicity, conversion is direct -->
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="btn-primary flex-grow flex items-center justify-center space-x-2">
+                        <span id="buttonText">Process File</span>
+                        <div id="loader" class="loader hidden"></div>
+                    </button>
+                    <button type="button" id="clearFormButton" class="btn-secondary flex-grow">
+                        Clear Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="messageBox" class="mt-8 p-4 message-box bg-red-100 border border-red-400 text-red-700 rounded-lg hidden" role="alert">
+                <!-- Error messages will be displayed here -->
+            </div>
+
+            <div id="resultContainer" class="mt-10 hidden">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-6 section-heading">Processed Result</h2>
+                <div class="bg-gray-100 p-6 rounded-xl mb-6 shadow-inner">
+                    <p class="text-gray-700 mb-2"><strong>Original File:</strong> <span id="originalFilename"></span></p>
+                    <div id="processedFilesDisplay">
+                        <!-- Processed file details will be inserted here -->
+                    </div>
+                </div>
+                <div id="processedImagesPreview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <!-- Processed images/PDF links will be displayed here -->
+                </div>
+                <!-- Download button will be dynamically added/updated -->
+                <a id="singleDownloadLink" href="#" download class="btn-primary w-full text-center block hidden">Download Processed File</a>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="mt-12">
+                <h2 class="text-3xl font-semibold section-heading mb-6">Frequently Asked Questions (FAQ)</h2>
+                <div class="space-y-4">
+                    <div class="faq-item">
+                        <div class="faq-question" data-faq-answer="faq1">
+                            <span>Can I resize a photo for Instagram or Facebook?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div id="faq1" class="faq-answer">
+                            <p>Easily resize an image for your preferred social media channel using the preset options. Choose from available sizes, including Instagram Square or TikTok Video, that meet each platform’s optimal size requirements.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" data-faq-answer="faq2">
+                            <span>How can I resize a photo without losing image quality?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div id="faq2" class="faq-answer">
+                            <p>Sizing down shouldn’t significantly reduce image quality, but sizing up can. If you select a preset size to resize your image and it might affect the image quality, you’ll notice that the resulting image might show some degradation, especially when viewed at larger scales. For best results, try to resize images to smaller dimensions or use the 'Lossless (PNG)' quality mode to maintain as much quality as possible. The tool uses a high-quality resampling algorithm (LANCZOS) to minimize quality loss during resizing.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" data-faq-answer="faq3">
+                            <span>Can I resize a photo on my phone?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div id="faq3" class="faq-answer">
+                            <p>Absolutely. This web application is designed to be fully responsive, allowing you to quickly and easily resize images on the go using your mobile device – no app download is necessary. Simply open the site in your mobile browser.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" data-faq-answer="faq4">
+                            <span>Can vector images be resized?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div id="faq4" class="faq-answer">
+                            <p>Currently, the image resize tool supports raster images in JPG, PNG, GIF, and WebP formats. Vector image formats (like SVG, AI, EPS) are not directly supported for resizing within this tool, as they require specialized vector editing software.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" data-faq-answer="faq5">
+                            <span>Can I use Flash Image Transformer for free? If so, what’s included?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div id="faq5" class="faq-answer">
+                            <p>Yes, Flash Image Transformer is a completely free-to-use web application. You can enjoy all its features, including image resizing, quality adjustment, PDF to image conversion, and image to PDF conversion, without any cost or limitations on usage. There are no premium plans or hidden fees.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-10 p-6 text-center text-gray-600 w-full max-w-3xl">
+        <p class="mb-4">&copy; <span id="currentYear"></span> AsaTech Technologies. All rights reserved.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="ad-placeholder">
+                <!-- AdSense Ad Slot 1 (e.g., 300x250 or responsive) -->
+                <p>Advertisement Area 1</p>
+                <!-- Replace this comment with your AdSense code -->
+            </div>
+            <div class="ad-placeholder">
+                <!-- AdSense Ad Slot 2 (e.g., 300x250 or responsive) -->
+                <p>Advertisement Area 2</p>
+                <!-- Replace this comment with your AdSense code -->
+            </div>
+        </div>
+        <div class="ad-placeholder mt-4">
+            <!-- AdSense Ad Slot 3 (e.g., 728x90 or responsive leaderboard) -->
+            <p>Advertisement Area 3 (Full Width)</p>
+            <!-- Replace this comment with your AdSense code -->
+        </div>
+    </footer>
+
+    <script>
+        // Get the current year and set it in the footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const imageForm = document.getElementById('imageForm');
+        const fileInput = document.getElementById('fileInput');
+        const fileTypeHint = document.getElementById('fileTypeHint');
+        const operationTypeRadios = document.querySelectorAll('input[name="operation_type"]');
+        const operationSelectionSection = document.getElementById('operationSelectionSection');
+
+        // Sections to show/hide
+        const imageResizeOptions = document.getElementById('imageResizeOptions');
+        const pdfToImageOptions = document.getElementById('pdfToImageOptions');
+        const imageToPdfOptions = document.getElementById('imageToPdfOptions');
+
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const percentageInput = document.getElementById('percentageInput');
+        const qualityModeRadios = document.querySelectorAll('input[name="quality_mode"]');
+        const jpegQualityContainer = document.getElementById('jpegQualityContainer');
+        const jpegQualityInput = document.getElementById('jpegQuality');
+        const jpegQualityValueSpan = document.getElementById('jpegQualityValue');
+        const buttonText = document.getElementById('buttonText');
+        const loader = document.getElementById('loader');
+        const resultContainer = document.getElementById('resultContainer');
+        const processedImagesPreview = document.getElementById('processedImagesPreview');
+        const singleDownloadLink = document.getElementById('singleDownloadLink');
+        const messageBox = document.getElementById('messageBox');
+        const clearFormButton = document.getElementById('clearFormButton');
+
+        const originalFilenameSpan = document.getElementById('originalFilename');
+        const processedFilesDisplay = document.getElementById('processedFilesDisplay');
+        const presetButtons = document.querySelectorAll('.preset-button');
+
+        const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+        const ALLOWED_PDF_EXTENSIONS = ['pdf'];
+
+        // FAQ elements
+        const faqQuestions = document.querySelectorAll('.faq-question');
+
+        // Function to show custom message box
+        function showMessageBox(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'border-red-400', 'text-red-700', 'bg-green-100', 'border-green-400', 'text-green-700');
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+            } else {
+                messageBox.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            }
+            messageBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Function to hide custom message box
+        function hideMessageBox() {
+            messageBox.classList.add('hidden');
+        }
+
+        // Function to update visibility of options based on operation type
+        function updateOperationOptions() {
+            const selectedOperation = document.querySelector('input[name="operation_type"]:checked')?.value;
+
+            // Hide all option sections and remove active class from labels
+            imageResizeOptions.classList.add('hidden');
+            pdfToImageOptions.classList.add('hidden');
+            imageToPdfOptions.classList.add('hidden');
+            jpegQualityContainer.classList.add('hidden');
+            operationTypeRadios.forEach(radio => radio.closest('label').classList.remove('active-radio'));
+
+            // Show relevant sections and update active class
+            if (selectedOperation === 'resize_image') {
+                imageResizeOptions.classList.remove('hidden');
+                document.querySelector('input[name="operation_type"][value="resize_image"]').closest('label').classList.add('active-radio');
+                if (document.querySelector('input[name="quality_mode"]:checked').value === 'lossy') {
+                    jpegQualityContainer.classList.remove('hidden');
+                }
+            } else if (selectedOperation === 'pdf_to_image') {
+                pdfToImageOptions.classList.remove('hidden');
+                document.querySelector('input[name="operation_type"][value="pdf_to_image"]').closest('label').classList.add('active-radio');
+            } else if (selectedOperation === 'image_to_pdf') {
+                imageToPdfOptions.classList.remove('hidden');
+                document.querySelector('input[name="operation_type"][value="image_to_pdf"]').closest('label').classList.add('active-radio');
+            }
+        }
+
+        // Event listener for quality mode radio buttons (inside resize options)
+        qualityModeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'lossy') {
+                    jpegQualityContainer.classList.remove('hidden');
+                    jpegQualityInput.value = 85; // Reset to default when shown
+                    jpegQualityValueSpan.textContent = 85;
+                } else {
+                    jpegQualityContainer.classList.add('hidden');
+                }
+            });
+        });
+
+        // Update JPEG quality value display
+        jpegQualityInput.addEventListener('input', () => {
+            jpegQualityValueSpan.textContent = jpegQualityInput.value;
+        });
+
+        // Event listener for preset buttons (only relevant for image resize)
+        presetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active-preset from all buttons first
+                presetButtons.forEach(btn => btn.classList.remove('active-preset'));
+                // Add active-preset to the clicked button
+                button.classList.add('active-preset');
+
+                // Ensure resize_image is selected when a preset is clicked
+                document.querySelector('input[name="operation_type"][value="resize_image"]').checked = true;
+                updateOperationOptions(); // Update UI to show resize options and active state
+
+                const width = button.dataset.width;
+                const height = button.dataset.height;
+
+                // Clear custom inputs
+                widthInput.value = '';
+                heightInput.value = '';
+                percentageInput.value = '';
+
+                // Set custom inputs to preset values
+                widthInput.value = width;
+                heightInput.value = height;
+
+                showMessageBox(`Preset "${button.dataset.name}" selected. Click 'Process File' to apply.`, 'info');
+            });
+        });
+
+        // Clear form button functionality
+        clearFormButton.addEventListener('click', () => {
+            imageForm.reset(); // Resets all form fields
+            hideMessageBox();
+            resultContainer.classList.add('hidden');
+            singleDownloadLink.classList.add('hidden');
+            operationSelectionSection.classList.add('hidden'); // Hide operation selection
+            fileTypeHint.textContent = 'Upload an image or PDF to get started.'; // Reset hint
+            // Clear active radio button class for operation types
+            operationTypeRadios.forEach(radio => radio.closest('label').classList.remove('active-radio'));
+            // Clear active preset button class
+            presetButtons.forEach(btn => btn.classList.remove('active-preset'));
+            // Hide all options sections
+            imageResizeOptions.classList.add('hidden');
+            pdfToImageOptions.classList.add('hidden');
+            imageToPdfOptions.classList.add('hidden');
+            jpegQualityContainer.classList.add('hidden');
+
+            buttonText.textContent = 'Process File';
+            loader.classList.add('hidden');
+            imageForm.querySelector('button[type="submit"]').disabled = false;
+        });
+
+        // Event listener for file input change
+        fileInput.addEventListener('change', () => {
+            hideMessageBox(); // Clear any previous messages
+            resultContainer.classList.add('hidden'); // Hide previous results
+            singleDownloadLink.classList.add('hidden'); // Hide download link
+            presetButtons.forEach(btn => btn.classList.remove('active-preset')); // Clear any active preset
+
+            const file = fileInput.files[0];
+            if (!file) {
+                operationSelectionSection.classList.add('hidden');
+                fileTypeHint.textContent = 'Upload an image or PDF to get started.';
+                // Uncheck all operation radios
+                operationTypeRadios.forEach(radio => radio.checked = false);
+                updateOperationOptions(); // Hide all option sections
+                return;
+            }
+
+            const fileName = file.name;
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+
+            operationSelectionSection.classList.remove('hidden'); // Show operation selection section
+
+            if (ALLOWED_IMAGE_EXTENSIONS.includes(fileExtension)) {
+                document.querySelector('input[name="operation_type"][value="resize_image"]').checked = true;
+                fileTypeHint.textContent = `File selected: ${fileName}. Ready for image operations.`;
+            } else if (ALLOWED_PDF_EXTENSIONS.includes(fileExtension)) {
+                document.querySelector('input[name="operation_type"][value="pdf_to_image"]').checked = true;
+                fileTypeHint.textContent = `File selected: ${fileName}. Ready for PDF operations.`;
+            } else {
+                showMessageBox('Unsupported file type. Please upload an image (PNG, JPG, JPEG, GIF, WebP) or a PDF file.', 'error');
+                fileInput.value = ''; // Clear the invalid file
+                operationSelectionSection.classList.add('hidden'); // Hide operation selection
+                fileTypeHint.textContent = 'Unsupported file type. Please upload an image or PDF to get started.';
+                // Uncheck all operation radios
+                operationTypeRadios.forEach(radio => radio.checked = false);
+            }
+            updateOperationOptions(); // Update UI based on auto-selected or manually selected operation
+        });
+
+
+        imageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessageBox(); // Clear previous messages
+            resultContainer.classList.add('hidden'); // Hide previous result
+            singleDownloadLink.classList.add('hidden'); // Hide download link
+
+            const file = fileInput.files[0];
+            if (!file) {
+                showMessageBox('Please select a file to upload.');
+                return;
+            }
+
+            const operationType = document.querySelector('input[name="operation_type"]:checked')?.value;
+            if (!operationType) {
+                showMessageBox('Please select an operation type (e.g., Resize Image, PDF to Image).', 'error');
+                return;
+            }
+
+            // Client-side validation based on operation type
+            if (operationType === 'resize_image') {
+                const width = widthInput.value;
+                const height = heightInput.value;
+                const percentage = percentageInput.value;
+
+                if (percentage && (percentage <= 0 || percentage > 1000)) {
+                    showMessageBox('Percentage must be between 1 and 1000.');
+                    return;
+                }
+                if ((width && width <= 0) || (height && height <= 0)) {
+                    showMessageBox('Width and Height must be positive numbers.');
+                    return;
+                }
+            }
+
+            // Show loading state
+            buttonText.textContent = 'Processing...';
+            loader.classList.remove('hidden');
+            imageForm.querySelector('button[type="submit"]').disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('operation_type', operationType);
+
+            // Append resize specific data only if operation is resize_image
+            if (operationType === 'resize_image') {
+                formData.append('width', widthInput.value);
+                formData.append('height', heightInput.value);
+                formData.append('percentage', percentageInput.value);
+                formData.append('quality_mode', document.querySelector('input[name="quality_mode"]:checked').value);
+                formData.append('jpeg_quality', jpegQualityInput.value);
+            }
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    originalFilenameSpan.textContent = data.original_filename;
+                    processedFilesDisplay.innerHTML = ''; // Clear previous results
+                    processedImagesPreview.innerHTML = ''; // Clear previous previews
+
+                    if (data.operation === 'resize_image') {
+                        const fileInfo = data.processed_files[0];
+                        processedFilesDisplay.innerHTML = `
+                            <p class="text-gray-700 mb-2"><strong>Processed File:</strong> <span id="processedFilename">${fileInfo.filename}</span> (<span id="processedSize">${fileInfo.processed_size}</span>)</p>
+                            <p class="text-gray-700 mb-2"><strong>Quality Mode:</strong> <span id="outputQualityMode">${fileInfo.quality_mode === 'lossless' ? 'Lossless (PNG)' : 'Lossy (JPEG)'}</span></p>
+                            ${fileInfo.quality_mode === 'lossy' ? `<p class="text-gray-700"><strong>JPEG Quality:</strong> <span id="outputJpegQuality">${fileInfo.jpeg_quality}</span></p>` : ''}
+                        `;
+                        processedImagesPreview.innerHTML = `
+                            <div class="flex justify-center">
+                                <img src="${fileInfo.url}" alt="Processed Image" class="max-w-full h-auto rounded-xl shadow-lg border-4 border-white transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                            </div>
+                        `;
+                        singleDownloadLink.href = fileInfo.url;
+                        singleDownloadLink.download = fileInfo.filename;
+                        singleDownloadLink.classList.remove('hidden');
+
+                    } else if (data.operation === 'pdf_to_image') {
+                        processedFilesDisplay.innerHTML = `<p class="text-gray-700 mb-2"><strong>Processed Pages:</strong> ${data.processed_files.length}</p>`;
+                        processedImagesPreview.innerHTML = data.processed_files.map(fileInfo => `
+                            <div class="flex flex-col items-center p-2 border rounded-lg bg-white shadow-sm">
+                                <img src="${fileInfo.url}" alt="Page ${fileInfo.page_number}" class="max-w-full h-auto rounded-lg mb-2">
+                                <a href="${fileInfo.url}" download="${fileInfo.filename}" class="text-sm text-indigo-600 hover:underline">Download Page ${fileInfo.page_number}</a>
+                            </div>
+                        `).join('');
+                        singleDownloadLink.classList.add('hidden'); // Hide single download link for multiple files
+                    } else if (data.operation === 'image_to_pdf') {
+                        const fileInfo = data.processed_files[0];
+                        processedFilesDisplay.innerHTML = `
+                            <p class="text-gray-700 mb-2"><strong>Processed File:</strong> <span id="processedFilename">${fileInfo.filename}</span></p>
+                        `;
+                        processedImagesPreview.innerHTML = `
+                            <div class="flex justify-center">
+                                <a href="${fileInfo.url}" target="_blank" class="text-indigo-600 hover:underline text-lg font-semibold">View Processed PDF</a>
+                            </div>
+                        `;
+                        singleDownloadLink.href = fileInfo.url;
+                        singleDownloadLink.download = fileInfo.filename;
+                        singleDownloadLink.classList.remove('hidden');
+                    }
+
+                    resultContainer.classList.remove('hidden');
+                    resultContainer.classList.add('result-container-animation');
+                    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showMessageBox('File processed successfully!', 'success');
+                } else {
+                    showMessageBox(data.error || 'An unknown error occurred.');
+                    resultContainer.classList.add('hidden');
+                    resultContainer.classList.remove('result-container-animation');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessageBox('Failed to connect to the server. Please try again.');
+                resultContainer.classList.add('hidden');
+                resultContainer.classList.remove('result-container-animation');
+            } finally {
+                buttonText.textContent = 'Process File';
+                loader.classList.add('hidden');
+                imageForm.querySelector('button[type="submit"]').disabled = false;
+            }
+        });
+
+        // FAQ Accordion Logic
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answerId = question.dataset.faqAnswer;
+                const answer = document.getElementById(answerId);
+                const icon = question.querySelector('.faq-icon');
+
+                // Close other open answers
+                document.querySelectorAll('.faq-answer.open').forEach(openAnswer => {
+                    if (openAnswer.id !== answerId) {
+                        openAnswer.classList.remove('open');
+                        openAnswer.previousElementSibling.querySelector('.faq-icon').classList.remove('rotate');
+                    }
+                });
+
+                // Toggle the clicked answer
+                answer.classList.toggle('open');
+                icon.classList.toggle('rotate');
+            });
+        });
+
+
+        // Initialize UI on page load
+        // Initially hide operation selection and other options
+        operationSelectionSection.classList.add('hidden');
+        imageResizeOptions.classList.add('hidden');
+        pdfToImageOptions.classList.add('hidden');
+        imageToPdfOptions.classList.add('hidden');
+        jpegQualityContainer.classList.add('hidden');
+        fileInput.removeAttribute('required'); // Remove required from HTML as JS handles validation
+    </script>
+</body>
+</html>
