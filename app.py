@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, render_template, send_from_directory, jsonify
-from PIL import Image
+from PIL import Image, ImageOps  # Import ImageOps for EXIF handling
 import fitz  # PyMuPDF for PDF processing
 import uuid
 import math
@@ -96,6 +96,9 @@ def process_file():
                 return jsonify({'success': False, 'error': 'Unsupported image file type.'}), 400
 
             img = Image.open(file_path)
+            # NEW: Apply EXIF orientation to the image
+            img = ImageOps.exif_transpose(img)
+
             original_size_bytes = os.path.getsize(file_path)  # Get raw bytes for comparison
             original_size_display = get_file_size_display(file_path)
 
@@ -105,7 +108,7 @@ def process_file():
             quality_mode = request.form.get('quality_mode', 'lossless')
             jpeg_quality = request.form.get('jpeg_quality', type=int, default=85)
 
-            # NEW: Automatic compression to KB if original is MB and no explicit resize options are chosen
+            # Automatic compression to KB if original is MB and no explicit resize options are chosen
             # Check if original size is 1MB or more AND no specific dimensions/percentage were provided
             if original_size_bytes >= 1024 * 1024 and not (width or height or percentage):
                 quality_mode = 'lossy'  # Force to lossy (JPEG) for compression
@@ -204,6 +207,8 @@ def process_file():
                 return jsonify({'success': False, 'error': 'Unsupported image file type.'}), 400
 
             img = Image.open(file_path)
+            # NEW: Apply EXIF orientation to the image before converting to PDF
+            img = ImageOps.exif_transpose(img)
 
             # Convert to RGB if not already to avoid issues with some image modes in PDF conversion
             if img.mode in ('RGBA', 'LA', 'P'):
