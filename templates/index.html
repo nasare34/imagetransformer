@@ -226,7 +226,7 @@
         .preset-button:nth-child(2) { animation-delay: 0.5s; }
         .preset-button:nth-child(3) { animation-delay: 0.6s; }
         .preset-button:nth-child(4) { animation-delay: 0.7s; }
-        /* Add more delays if you add more buttons */
+        .preset-button:nth-child(5) { animation-delay: 0.8s; } /* Added delay for new button */
 
         /* Footer specific styles */
         footer {
@@ -276,7 +276,7 @@
             opacity: 0;
         }
         .faq-answer.open {
-            max-height: 200px; /* Adjust as needed for content length */
+            max-height: 9999px; /* Increased to a very large value to ensure full content display */
             opacity: 1;
         }
         .faq-icon {
@@ -286,19 +286,42 @@
             transform: rotate(180deg);
         }
 
+        /* Drag and Drop styles */
+        .drop-zone {
+            border: 2px dashed #cbd5e1; /* Default dashed border */
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            cursor: pointer;
+            position: relative; /* For positioning the file input */
+        }
+        .drop-zone.dragover {
+            border-color: #6366f1; /* Highlight on dragover */
+            background-color: #e0e7ff; /* Light background on dragover */
+        }
+        .drop-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* Hide the actual input */
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <!-- Top Navigation Bar (now just a header) -->
     <header class="top-nav">
-        <h1 class="site-title"> Image Transformer</h1>
+        <h1 class="site-title">Flash Image Transformer</h1>
     </header>
 
     <!-- Main Content Area -->
     <div class="content-area">
         <div class="card w-full max-w-3xl">
             <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-4">
-                Welcome to Image Transformer!
+                Welcome to Flash Image Transformer!
             </h1>
             <p class="text-xl text-center text-gray-600 mb-10">
                 Your go-to site to resize, reduce, or increase the size and resolution of all your images, and convert between PDF and image formats.
@@ -308,11 +331,22 @@
                 <!-- Upload Section (always visible) -->
                 <div id="upload-section">
                     <h2 class="text-2xl font-semibold section-heading mb-4">Upload File</h2>
-                    <label for="fileInput" class="block text-lg font-medium text-gray-700 mb-2">
-                        Select a file
-                    </label>
-                    <input type="file" id="fileInput" name="file" class="input-field">
-                    <p class="text-sm text-gray-500 mt-2" id="fileTypeHint">Upload an image to get started.</p>
+                    <!-- Drag and Drop Zone -->
+                    <div id="dropZone" class="drop-zone">
+                        <p class="text-lg font-medium text-gray-700 mb-2">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i><br>
+                            Drag & Drop your file here, or
+                        </p>
+                        <label for="fileInput" class="btn-secondary inline-flex items-center px-4 py-2">
+                            <i class="fas fa-folder-open mr-2"></i> Browse Files
+                        </label>
+                        <input type="file" id="fileInput" name="file" class="input-field">
+                        <p class="text-sm text-gray-500 mt-2" id="fileTypeHint">Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs</p>
+                        <!-- NEW: Automatic compression message -->
+                        <p class="text-sm text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i> Large images (MBs) will be automatically compressed to KBs for optimal web use if no specific resizing options are chosen.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Operation Type Selection (initially hidden, shown after file upload) -->
@@ -359,6 +393,12 @@
                             <span>Facebook Post</span>
                             <span class="text-xs text-gray-500 mt-1">1200x630px</span>
                         </button>
+                        <!-- NEW: Passport Size Preset -->
+                        <button type="button" class="preset-button" data-width="1062" data-height="862" data-name="Passport Size">
+                            <i class="fas fa-id-card"></i>
+                            <span>Passport Size</span>
+                            <span class="text-xs text-gray-500 mt-1">1062x862px</span>
+                        </button>
                         <!-- Add more presets as needed -->
                     </div>
 
@@ -387,11 +427,11 @@
                     <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
                         <label>
                             <input type="radio" name="quality_mode" value="lossless" checked>
-                            <span>Lossless (PNG)</span>
+                            <span>High Quality (PNG)</span>
                         </label>
                         <label>
                             <input type="radio" name="quality_mode" value="lossy">
-                            <span>Lossy (JPEG)</span>
+                            <span>Compressed (JPEG)</span>
                         </label>
                     </div>
 
@@ -434,9 +474,14 @@
             <div id="resultContainer" class="mt-10 hidden">
                 <h2 class="text-3xl font-semibold text-gray-800 mb-6 section-heading">Processed Result</h2>
                 <div class="bg-gray-100 p-6 rounded-xl mb-6 shadow-inner">
-                    <p class="text-gray-700 mb-2"><strong>Original File:</strong> <span id="originalFilename"></span></p>
+                    <!-- Added flex and break-words for better wrapping on small screens -->
+                    <p class="text-gray-700 mb-2 flex flex-wrap">
+                        <strong class="mr-1">Original File:</strong>
+                        <span id="originalFilename" class="break-all"></span>
+                    </p>
                     <div id="processedFilesDisplay">
                         <!-- Processed file details will be inserted here -->
+                        <!-- Dynamically inserted content will also need break-all if it contains filenames -->
                     </div>
                 </div>
                 <div id="processedImagesPreview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -444,6 +489,8 @@
                 </div>
                 <!-- Download button will be dynamically added/updated -->
                 <a id="singleDownloadLink" href="#" download class="btn-primary w-full text-center block hidden">Download Processed File</a>
+                <!-- New: Download All button for PDF to Image -->
+                <a id="downloadAllPdfImagesLink" href="#" download class="btn-primary w-full text-center block hidden mt-4">Download All Images as Zip</a>
             </div>
 
             <!-- FAQ Section -->
@@ -466,7 +513,7 @@
                             <i class="fas fa-chevron-down faq-icon"></i>
                         </div>
                         <div id="faq2" class="faq-answer">
-                            <p>Sizing down shouldn’t significantly reduce image quality, but sizing up can. If you select a preset size to resize your image and it might affect the image quality, you’ll notice that the resulting image might show some degradation, especially when viewed at larger scales. For best results, try to resize images to smaller dimensions or use the 'Lossless (PNG)' quality mode to maintain as much quality as possible. The tool uses a high-quality resampling algorithm (LANCZOS) to minimize quality loss during resizing.</p>
+                            <p>Sizing down shouldn’t significantly reduce image quality, but sizing up can. If you select a preset size to resize your image and it might affect the image quality, you’ll notice that the resulting image might show some degradation, especially when viewed at larger scales. Try to resize images to smaller dimensions or use the 'High Quality (PNG)' quality mode to maintain as much quality as possible. The tool uses a high-quality resampling algorithm (LANCZOS) to minimize quality loss during resizing.</p>
                         </div>
                     </div>
 
@@ -553,6 +600,7 @@
         const resultContainer = document.getElementById('resultContainer');
         const processedImagesPreview = document.getElementById('processedImagesPreview');
         const singleDownloadLink = document.getElementById('singleDownloadLink');
+        const downloadAllPdfImagesLink = document.getElementById('downloadAllPdfImagesLink'); // New element
         const messageBox = document.getElementById('messageBox');
         const clearFormButton = document.getElementById('clearFormButton');
 
@@ -565,6 +613,9 @@
 
         // FAQ elements
         const faqQuestions = document.querySelectorAll('.faq-question');
+
+        // Drag and Drop elements
+        const dropZone = document.getElementById('dropZone');
 
         // Function to show custom message box
         function showMessageBox(message, type = 'error') {
@@ -598,7 +649,7 @@
             if (selectedOperation === 'resize_image') {
                 imageResizeOptions.classList.remove('hidden');
                 document.querySelector('input[name="operation_type"][value="resize_image"]').closest('label').classList.add('active-radio');
-                if (document.querySelector('input[name="quality_mode"]:checked').value === 'lossy') {
+                if (document.querySelector('input[name="quality_mode"]:checked').value === 'lossy') { // Still check for 'lossy' value in JS
                     jpegQualityContainer.classList.remove('hidden');
                 }
             } else if (selectedOperation === 'pdf_to_image') {
@@ -613,7 +664,7 @@
         // Event listener for quality mode radio buttons (inside resize options)
         qualityModeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
-                if (radio.value === 'lossy') {
+                if (radio.value === 'lossy') { // Still check for 'lossy' value in JS
                     jpegQualityContainer.classList.remove('hidden');
                     jpegQualityInput.value = 85; // Reset to default when shown
                     jpegQualityValueSpan.textContent = 85;
@@ -662,8 +713,9 @@
             hideMessageBox();
             resultContainer.classList.add('hidden');
             singleDownloadLink.classList.add('hidden');
+            downloadAllPdfImagesLink.classList.add('hidden'); // Hide new download all link
             operationSelectionSection.classList.add('hidden'); // Hide operation selection
-            fileTypeHint.textContent = 'Upload an image or PDF to get started.'; // Reset hint
+            fileTypeHint.textContent = 'Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs'; // Reset hint
             // Clear active radio button class for operation types
             operationTypeRadios.forEach(radio => radio.closest('label').classList.remove('active-radio'));
             // Clear active preset button class
@@ -677,6 +729,8 @@
             buttonText.textContent = 'Process File';
             loader.classList.add('hidden');
             imageForm.querySelector('button[type="submit"]').disabled = false;
+            // Remove dragover class if present
+            dropZone.classList.remove('dragover');
         });
 
         // Event listener for file input change
@@ -684,12 +738,13 @@
             hideMessageBox(); // Clear any previous messages
             resultContainer.classList.add('hidden'); // Hide previous results
             singleDownloadLink.classList.add('hidden'); // Hide download link
+            downloadAllPdfImagesLink.classList.add('hidden'); // Hide new download all link
             presetButtons.forEach(btn => btn.classList.remove('active-preset')); // Clear any active preset
 
             const file = fileInput.files[0];
             if (!file) {
                 operationSelectionSection.classList.add('hidden');
-                fileTypeHint.textContent = 'Upload an image or PDF to get started.';
+                fileTypeHint.textContent = 'Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs';
                 // Uncheck all operation radios
                 operationTypeRadios.forEach(radio => radio.checked = false);
                 updateOperationOptions(); // Hide all option sections
@@ -718,12 +773,44 @@
             updateOperationOptions(); // Update UI based on auto-selected or manually selected operation
         });
 
+        // Add event listener for operation type radio buttons
+        operationTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                updateOperationOptions(); // Call the function to update UI when a radio button is changed
+            });
+        });
+
+        // Drag and Drop Event Listeners
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Prevent default to allow drop
+            dropZone.classList.add('dragover');
+            fileTypeHint.textContent = 'Drop your file here!';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+            fileTypeHint.textContent = 'Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); // Prevent default browser behavior (e.g., opening file)
+            dropZone.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files; // Assign dropped files to the file input
+                const event = new Event('change'); // Create a new change event
+                fileInput.dispatchEvent(event); // Dispatch the event to trigger existing logic
+            }
+        });
+
 
         imageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessageBox(); // Clear previous messages
             resultContainer.classList.add('hidden'); // Hide previous result
-            singleDownloadLink.classList.add('hidden'); // Hide download link
+            singleDownloadLink.classList.add('hidden'); // Hide single download link
+            downloadAllPdfImagesLink.classList.add('hidden'); // Hide new download all link
 
             const file = fileInput.files[0];
             if (!file) {
@@ -756,7 +843,7 @@
             // Show loading state
             buttonText.textContent = 'Processing...';
             loader.classList.remove('hidden');
-            imageForm.querySelector('button[type="submit"]').disabled = true;
+            imageForm.querySelector('button[type="submit"]').disabled = false;
 
             const formData = new FormData();
             formData.append('file', file);
@@ -767,6 +854,8 @@
                 formData.append('width', widthInput.value);
                 formData.append('height', heightInput.value);
                 formData.append('percentage', percentageInput.value);
+                // Ensure the value passed to the backend is still 'lossless' or 'lossy'
+                // even if the display text is changed.
                 formData.append('quality_mode', document.querySelector('input[name="quality_mode"]:checked').value);
                 formData.append('jpeg_quality', jpegQualityInput.value);
             }
@@ -787,13 +876,27 @@
                     if (data.operation === 'resize_image') {
                         const fileInfo = data.processed_files[0];
                         processedFilesDisplay.innerHTML = `
-                            <p class="text-gray-700 mb-2"><strong>Processed File:</strong> <span id="processedFilename">${fileInfo.filename}</span> (<span id="processedSize">${fileInfo.processed_size}</span>)</p>
-                            <p class="text-gray-700 mb-2"><strong>Quality Mode:</strong> <span id="outputQualityMode">${fileInfo.quality_mode === 'lossless' ? 'Lossless (PNG)' : 'Lossy (JPEG)'}</span></p>
+                            <p class="text-gray-700 mb-2 flex flex-wrap">
+                                <strong class="mr-1">Processed File:</strong>
+                                <span id="processedFilename" class="break-all">${fileInfo.filename}</span>
+                            </p>
+                            <p class="text-gray-700 mb-2">
+                                <strong class="mr-1">Original Size:</strong>
+                                <span id="originalSize">${fileInfo.original_size}</span>
+                            </p>
+                            <p class="text-gray-700 mb-2">
+                                <strong class="mr-1">Processed Size:</strong>
+                                <span id="processedSize">${fileInfo.processed_size}</span>
+                            </p>
+                            <p class="text-gray-700 mb-2"><strong>Quality Mode:</strong> <span id="outputQualityMode">${fileInfo.quality_mode === 'lossless' ? 'High Quality (PNG)' : 'Compressed (JPEG)'}</span></p>
                             ${fileInfo.quality_mode === 'lossy' ? `<p class="text-gray-700"><strong>JPEG Quality:</strong> <span id="outputJpegQuality">${fileInfo.jpeg_quality}</span></p>` : ''}
                         `;
+                        // Make the image itself a clickable link to view in a new tab
                         processedImagesPreview.innerHTML = `
                             <div class="flex justify-center">
-                                <img src="${fileInfo.url}" alt="Processed Image" class="max-w-full h-auto rounded-xl shadow-lg border-4 border-white transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                                <a href="${fileInfo.url}" target="_blank" class="block max-w-full h-auto rounded-xl shadow-lg border-4 border-white transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                                    <img src="${fileInfo.url}" alt="Processed Image" class="max-w-full h-auto rounded-xl">
+                                </a>
                             </div>
                         `;
                         singleDownloadLink.href = fileInfo.url;
@@ -804,19 +907,31 @@
                         processedFilesDisplay.innerHTML = `<p class="text-gray-700 mb-2"><strong>Processed Pages:</strong> ${data.processed_files.length}</p>`;
                         processedImagesPreview.innerHTML = data.processed_files.map(fileInfo => `
                             <div class="flex flex-col items-center p-2 border rounded-lg bg-white shadow-sm">
-                                <img src="${fileInfo.url}" alt="Page ${fileInfo.page_number}" class="max-w-full h-auto rounded-lg mb-2">
-                                <a href="${fileInfo.url}" download="${fileInfo.filename}" class="text-sm text-indigo-600 hover:underline">Download Page ${fileInfo.page_number}</a>
+                                <a href="${fileInfo.url}" target="_blank" class="block max-w-full h-auto rounded-lg mb-2">
+                                    <img src="${fileInfo.url}" alt="Page ${fileInfo.page_number}" class="max-w-full h-auto rounded-lg">
+                                </a>
+                                <!-- Removed individual download link -->
                             </div>
                         `).join('');
-                        singleDownloadLink.classList.add('hidden'); // Hide single download link for multiple files
+                        // Show the "Download All" button
+                        if (data.download_all_url) {
+                            downloadAllPdfImagesLink.href = data.download_all_url;
+                            downloadAllPdfImagesLink.download = `processed_pdf_images.zip`; // Suggest a generic name
+                            downloadAllPdfImagesLink.classList.remove('hidden');
+                        }
+
                     } else if (data.operation === 'image_to_pdf') {
                         const fileInfo = data.processed_files[0];
                         processedFilesDisplay.innerHTML = `
-                            <p class="text-gray-700 mb-2"><strong>Processed File:</strong> <span id="processedFilename">${fileInfo.filename}</span></p>
+                            <p class="text-gray-700 mb-2 flex flex-wrap">
+                                <strong class="mr-1">Processed File:</strong>
+                                <span id="processedFilename" class="break-all">${fileInfo.filename}</span>
+                            </p>
                         `;
+                        // The "View Processed PDF" link already opens in a new tab
                         processedImagesPreview.innerHTML = `
                             <div class="flex justify-center">
-                                <a href="${fileInfo.url}" target="_blank" class="text-indigo-600 hover:underline text-lg font-semibold">View Processed PDF</a>
+                                <a href="${fileInfo.url}" target="_blank" class="text-indigo-600 hover:underline text-lg font-semibold break-all">View Processed PDF</a>
                             </div>
                         `;
                         singleDownloadLink.href = fileInfo.url;
