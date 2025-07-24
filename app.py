@@ -1,11 +1,12 @@
 import os
-from flask import Flask, request, render_template, send_from_directory, jsonify
+import uuid
+import zipfile
+import tempfile
+from flask import Flask, request, jsonify, render_template, send_from_directory, url_for
 from PIL import Image, ImageOps  # Import ImageOps for EXIF handling
 import fitz  # PyMuPDF for PDF processing
-import uuid
 import math
 import shutil
-import zipfile  # Import zipfile for creating zip archives
 import time  # Import time module for file age checking
 
 app = Flask(__name__)
@@ -67,6 +68,19 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/about')
+def about():
+    """Renders the about page."""
+    return render_template('about.html')
+
+
+# Route for the Contact page
+@app.route('/contact')
+def contact():
+    """Renders the contact page."""
+    return render_template('contact.html')
+
+
 @app.route('/process', methods=['POST'])
 def process_file():
     """Handles file upload and processing."""
@@ -89,6 +103,8 @@ def process_file():
 
     processed_files_info = []
     download_all_url = None  # Initialize for PDF zipping
+    # temp_image_paths is no longer needed for cleanup in finally, as PROCESSED_FOLDER is cleaned by cleanup_old_files
+    # temp_image_paths = [] # Removed as it's no longer used for immediate cleanup
 
     try:
         if operation_type == 'resize_image':
@@ -96,7 +112,7 @@ def process_file():
                 return jsonify({'success': False, 'error': 'Unsupported image file type.'}), 400
 
             img = Image.open(file_path)
-            # NEW: Apply EXIF orientation to the image
+            # Apply EXIF orientation to the image
             img = ImageOps.exif_transpose(img)
 
             original_size_bytes = os.path.getsize(file_path)  # Get raw bytes for comparison
@@ -173,7 +189,9 @@ def process_file():
                 return jsonify({'success': False, 'error': 'Unsupported PDF file type.'}), 400
 
             doc = fitz.open(file_path)
-            temp_image_paths = []  # To store paths of individual images for zipping
+            # List to store filenames of individual images for zipping
+            # These files will remain in PROCESSED_FOLDER until cleanup_old_files removes them
+            individual_image_filenames_for_zip = []
 
             for page_num in range(len(doc)):
                 page = doc.load_page(page_num)
@@ -183,11 +201,11 @@ def process_file():
                 page_image_filename = f"{os.path.splitext(original_filename)[0]}_page_{page_num + 1}_{uuid.uuid4().hex[:8]}.png"
                 page_image_path = os.path.join(app.config['PROCESSED_FOLDER'], page_image_filename)
                 img.save(page_image_path)
-                temp_image_paths.append(page_image_path)  # Add to list for zipping
+                individual_image_filenames_for_zip.append(page_image_filename) # Add to list for zipping
 
                 processed_files_info.append({
                     'filename': page_image_filename,
-                    'url': f'/processed/{page_image_filename}',
+                    'url': f'/processed/{page_image_filename}',  # Correct URL for serving
                     'page_number': page_num + 1
                 })
             doc.close()
@@ -197,8 +215,9 @@ def process_file():
             zip_file_path = os.path.join(app.config['PROCESSED_FOLDER'], zip_filename)
 
             with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for img_path in temp_image_paths:
-                    zipf.write(img_path, os.path.basename(img_path))  # Add image to zip
+                for img_name in individual_image_filenames_for_zip:
+                    # Write the file from its actual location in PROCESSED_FOLDER to the zip
+                    zipf.write(os.path.join(app.config['PROCESSED_FOLDER'], img_name), img_name)
 
             download_all_url = f'/processed/{zip_filename}'  # URL for the zip file
 
@@ -207,7 +226,7 @@ def process_file():
                 return jsonify({'success': False, 'error': 'Unsupported image file type.'}), 400
 
             img = Image.open(file_path)
-            # NEW: Apply EXIF orientation to the image before converting to PDF
+            # Apply EXIF orientation to the image before converting to PDF
             img = ImageOps.exif_transpose(img)
 
             # Convert to RGB if not already to avoid issues with some image modes in PDF conversion
@@ -244,14 +263,11 @@ def process_file():
         app.logger.error(f"Error processing file: {e}", exc_info=True)
         return jsonify({'success': False, 'error': f'An error occurred during processing: {str(e)}'}), 500
     finally:
-        # Clean up the original uploaded file
+        # Clean up the original uploaded file only
         if os.path.exists(file_path):
             os.remove(file_path)
-        # Clean up individual images after zipping for PDF to Image
-        if operation_type == 'pdf_to_image':
-            for path in temp_image_paths:
-                if os.path.exists(path):
-                    os.remove(path)
+        # Removed the problematic cleanup of individual PDF images here.
+        # These are now handled by the periodic cleanup_old_files function.
 
 
 @app.route('/processed/<filename>')

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Flash Image Transformer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #8e2de2, #4a00e0); /* Vibrant gradient background */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Stack header, main content, footer */
+            align-items: center;
+            /* Changed justify-content to space-between to push footer to bottom */
+            justify-content: space-between;
+            padding: 1rem; /* Add back some padding for overall layout */
+            overflow-x: hidden; /* Prevent horizontal scroll due to animations */
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            width: 100%;
+            background: linear-gradient(to right, #6366f1, #4f46e5); /* Indigo gradient */
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column; /* Allow stacking title and nav */
+            align-items: center;
+            justify-content: center; /* Center title */
+            margin-bottom: 2rem; /* Space below the top bar */
+            border-radius: 0.75rem; /* Rounded corners for the top bar */
+        }
+        .top-nav .site-title {
+            font-size: 2rem; /* Slightly larger title */
+            font-weight: 700;
+            margin-bottom: 0.5rem; /* Space between title and nav */
+        }
+        /* New style for header navigation links */
+        .header-nav-links a {
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .header-nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Subtle hover effect */
+            transform: translateY(-1px);
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* Card styles for content */
+        .card {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08); /* Deeper shadow */
+            padding: 3rem;
+            width: 100%; /* Ensure card takes full width of its container */
+            max-width: 48rem; /* Max width for content within the card */
+            margin-bottom: 2rem; /* Space between card and footer */
+            animation: fadeInScale 0.8s ease-out forwards; /* Card entry animation */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateY(20px) scale(0.98); /* Start slightly down and scaled */
+        }
+
+        .section-heading {
+            border-bottom: 2px solid #e0e7ff; /* Light indigo border */
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #374151; /* Gray 700 */
+        }
+
+        /* Footer specific styles */
+        footer {
+            width: 100%;
+            max-width: 48rem; /* Match card max-width for alignment */
+            /* Removed margin-top to allow flex-grow on content-area to push it */
+            padding: 1rem; /* Add padding to footer */
+            flex-shrink: 0; /* Prevent footer from shrinking */
+        }
+        .footer-links a {
+            color: #e0e7ff; /* Lighter indigo for links */
+            font-weight: 500;
+            transition: color 0.2s ease-in-out;
+        }
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        /* New style for ad space */
+        .ad-space {
+            min-height: 100px; /* Minimum height for ad content */
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem; /* Space between ad areas */
+            /* Optional: Add a subtle background or border if you want a visual indicator for ad zones */
+            /* background-color: rgba(255, 255, 255, 0.05); */
+            /* border: 1px dashed rgba(255, 255, 255, 0.2); */
+            border-radius: 0.5rem;
+        }
+        .ad-space-large {
+            min-height: 120px; /* Slightly larger height for the full-width ad */
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <h1 class="site-title">Flash Image Transformer</h1>
+        <nav class="flex justify-center space-x-6 header-nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="card w-full max-w-3xl">
+            <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-4">
+                About Us – Your Trusted Online Image Resizer & Enhancer
+            </h1>
+            <p class="text-lg text-center text-gray-600 mb-8">
+                Learn about our mission to provide fast, high-quality image resizing and enhancement tools. Reduce image size from megabytes to kilobytes and boost image resolution with ease.
+            </p>
+
+            <div class="space-y-6 text-gray-700">
+                <p>
+                    Welcome to Flash Image Transformer, your go-to destination for fast, free, and reliable image resizing and enhancement online.
+                </p>
+                <p>
+                    We specialize in helping users:
+                </p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li>Resize images without losing quality</li>
+                    <li>Compress large images from megabytes to kilobytes (MB to KB)</li>
+                    <li>Improve photo resolution and sharpness</li>
+                    <li>Optimize images for web, email, and social media</li>
+                </ul>
+
+                <h2 class="text-2xl font-semibold section-heading mt-8">Why We Exist</h2>
+                <p>
+                    In today’s digital world, high-quality images are essential — but large file sizes can slow down websites, eat up storage, and make uploads frustrating. That’s where we come in. We built this tool to give you the power to compress, resize, and beautify images instantly without needing complex software.
+                </p>
+                <p>
+                    Whether you’re a blogger, student, designer, or business owner, our service makes your image optimization easy, fast, and effective.
+                </p>
+
+                <h2 class="text-2xl font-semibold section-heading mt-8">Our Mission</h2>
+                <p>
+                    To empower people around the world to create, share, and store beautiful images without worrying about size limits or blurry resolution.
+                </p>
+
+                <h2 class="text-2xl font-semibold section-heading mt-8">What Makes Us Different?</h2>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li>Free to use</li>
+                    <li>Mobile-friendly & fast</li>
+                    <li>No watermarks</li>
+                    <li>Supports all image formats (JPG, PNG, WebP, etc.)</li>
+                    <li>Advanced resolution enhancement using smart algorithms</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-10 p-6 text-center text-gray-600 w-full max-w-3xl">
+        <p class="mb-4">&copy; <span id="currentYear"></span> AsaTech Technologies. All rights reserved.</p>
+        <div class="flex justify-center space-x-6 mb-4 footer-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+        </div>
+        <!-- AdSense auto ad space -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="ad-space"></div>
+            <div class="ad-space"></div>
+        </div>
+        <div class="ad-space ad-space-large mt-4"></div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

@@ -17,7 +17,8 @@
             display: flex;
             flex-direction: column; /* Stack header, main content, footer */
             align-items: center;
-            justify-content: center; /* Center content vertically */
+            /* Changed justify-content to space-between to push footer to bottom */
+            justify-content: space-between;
             padding: 1rem; /* Add back some padding for overall layout */
             overflow-x: hidden; /* Prevent horizontal scroll due to animations */
         }
@@ -31,15 +32,30 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             display: flex;
+            flex-direction: column; /* Allow stacking title and nav */
             align-items: center;
-            justify-content: center; /* Center title */
+            justify-content: center; /* Center content */
             margin-bottom: 2rem; /* Space below the top bar */
             border-radius: 0.75rem; /* Rounded corners for the top bar */
         }
         .top-nav .site-title {
             font-size: 2rem; /* Slightly larger title */
             font-weight: 700;
+            margin-bottom: 0.5rem; /* Space between title and nav */
         }
+        /* New style for header navigation links */
+        .header-nav-links a {
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .header-nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Subtle hover effect */
+            transform: translateY(-1px);
+        }
+
 
         /* Main Content Area - now directly centers the card */
         .content-area {
@@ -232,22 +248,34 @@
         footer {
             width: 100%;
             max-width: 48rem; /* Match card max-width for alignment */
-            margin-top: 2rem; /* Space between card and footer */
+            /* Removed margin-top to allow flex-grow on content-area to push it */
             padding: 1rem; /* Add padding to footer */
+            flex-shrink: 0; /* Prevent footer from shrinking */
         }
-        .ad-placeholder {
-            background-color: #e0e7ff; /* Light indigo background for ad areas */
-            border: 1px dashed #a5b4fc; /* Dashed border for visual distinction */
-            color: #4f46e5; /* Indigo text */
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 0.5rem;
+        .footer-links a { /* New style for footer links */
+            color: #e0e7ff; /* Lighter indigo for links */
+            font-weight: 500;
+            transition: color 0.2s ease-in-out;
+        }
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        /* New style for ad space */
+        .ad-space {
+            min-height: 100px; /* Minimum height for ad content */
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100px; /* Ensure enough height for ads */
-            font-weight: 600;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+            margin-bottom: 1rem; /* Space between ad areas */
+            /* Optional: Add a subtle background or border if you want a visual indicator for ad zones */
+            /* background-color: rgba(255, 255, 255, 0.05); */
+            /* border: 1px dashed rgba(255, 255, 255, 0.2); */
+            border-radius: 0.5rem;
+        }
+        .ad-space-large {
+            min-height: 120px; /* Slightly larger height for the full-width ad */
         }
 
         /* FAQ specific styles */
@@ -312,9 +340,14 @@
     </style>
 </head>
 <body>
-    <!-- Top Navigation Bar (now just a header) -->
+    <!-- Top Navigation Bar (now the main header) -->
     <header class="top-nav">
         <h1 class="site-title">Flash Image Transformer</h1>
+        <nav class="flex justify-center space-x-6 header-nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+        </nav>
     </header>
 
     <!-- Main Content Area -->
@@ -553,24 +586,17 @@
 
     <footer class="mt-10 p-6 text-center text-gray-600 w-full max-w-3xl">
         <p class="mb-4">&copy; <span id="currentYear"></span> AsaTech Technologies. All rights reserved.</p>
-
+        <div class="flex justify-center space-x-6 mb-4 footer-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+        </div>
+        <!-- AdSense auto ad space -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="ad-placeholder">
-                <!-- AdSense Ad Slot 1 (e.g., 300x250 or responsive) -->
-                <p>Advertisement Area 1</p>
-                <!-- Replace this comment with your AdSense code -->
-            </div>
-            <div class="ad-placeholder">
-                <!-- AdSense Ad Slot 2 (e.g., 300x250 or responsive) -->
-                <p>Advertisement Area 2</p>
-                <!-- Replace this comment with your AdSense code -->
-            </div>
+            <div class="ad-space"></div>
+            <div class="ad-space"></div>
         </div>
-        <div class="ad-placeholder mt-4">
-            <!-- AdSense Ad Slot 3 (e.g., 728x90 or responsive leaderboard) -->
-            <p>Advertisement Area 3 (Full Width)</p>
-            <!-- Replace this comment with your AdSense code -->
-        </div>
+        <div class="ad-space ad-space-large mt-4"></div>
     </footer>
 
     <script>
@@ -637,6 +663,7 @@
         // Function to update visibility of options based on operation type
         function updateOperationOptions() {
             const selectedOperation = document.querySelector('input[name="operation_type"]:checked')?.value;
+            console.log('Selected operation type:', selectedOperation); // Debug: Log selected operation
 
             // Hide all option sections and remove active class from labels
             imageResizeOptions.classList.add('hidden');
@@ -664,6 +691,7 @@
         // Event listener for quality mode radio buttons (inside resize options)
         qualityModeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
+                console.log('Quality mode changed to:', radio.value); // Debug: Log quality mode change
                 if (radio.value === 'lossy') { // Still check for 'lossy' value in JS
                     jpegQualityContainer.classList.remove('hidden');
                     jpegQualityInput.value = 85; // Reset to default when shown
@@ -704,6 +732,7 @@
                 heightInput.value = height;
 
                 showMessageBox(`Preset "${button.dataset.name}" selected. Click 'Process File' to apply.`, 'info');
+                console.log('Preset selected:', button.dataset.name, 'Width:', width, 'Height:', height); // Debug: Log preset selection
             });
         });
 
@@ -731,6 +760,7 @@
             imageForm.querySelector('button[type="submit"]').disabled = false;
             // Remove dragover class if present
             dropZone.classList.remove('dragover');
+            console.log('Form cleared.'); // Debug: Log form clear
         });
 
         // Event listener for file input change
@@ -748,20 +778,24 @@
                 // Uncheck all operation radios
                 operationTypeRadios.forEach(radio => radio.checked = false);
                 updateOperationOptions(); // Hide all option sections
+                console.log('No file selected.'); // Debug: Log no file
                 return;
             }
 
             const fileName = file.name;
             const fileExtension = fileName.split('.').pop().toLowerCase();
+            console.log('File selected:', fileName, 'Extension:', fileExtension); // Debug: Log file selection details
 
             operationSelectionSection.classList.remove('hidden'); // Show operation selection section
 
             if (ALLOWED_IMAGE_EXTENSIONS.includes(fileExtension)) {
                 document.querySelector('input[name="operation_type"][value="resize_image"]').checked = true;
                 fileTypeHint.textContent = `File selected: ${fileName}. Ready for image operations.`;
+                console.log('Image file detected. Auto-selecting resize_image.'); // Debug: Auto-selection
             } else if (ALLOWED_PDF_EXTENSIONS.includes(fileExtension)) {
                 document.querySelector('input[name="operation_type"][value="pdf_to_image"]').checked = true;
                 fileTypeHint.textContent = `File selected: ${fileName}. Ready for PDF operations.`;
+                console.log('PDF file detected. Auto-selecting pdf_to_image.'); // Debug: Auto-selection
             } else {
                 showMessageBox('Unsupported file type. Please upload an image (PNG, JPG, JPEG, GIF, WebP) or a PDF file.', 'error');
                 fileInput.value = ''; // Clear the invalid file
@@ -769,6 +803,7 @@
                 fileTypeHint.textContent = 'Unsupported file type. Please upload an image or PDF to get started.';
                 // Uncheck all operation radios
                 operationTypeRadios.forEach(radio => radio.checked = false);
+                console.warn('Unsupported file type:', fileExtension); // Debug: Unsupported type
             }
             updateOperationOptions(); // Update UI based on auto-selected or manually selected operation
         });
@@ -801,6 +836,7 @@
                 fileInput.files = files; // Assign dropped files to the file input
                 const event = new Event('change'); // Create a new change event
                 fileInput.dispatchEvent(event); // Dispatch the event to trigger existing logic
+                console.log('File dropped:', files[0].name); // Debug: Log dropped file
             }
         });
 
@@ -815,12 +851,14 @@
             const file = fileInput.files[0];
             if (!file) {
                 showMessageBox('Please select a file to upload.');
+                console.error('Submission failed: No file selected.'); // Debug: No file error
                 return;
             }
 
             const operationType = document.querySelector('input[name="operation_type"]:checked')?.value;
             if (!operationType) {
                 showMessageBox('Please select an operation type (e.g., Resize Image, PDF to Image).', 'error');
+                console.error('Submission failed: No operation type selected.'); // Debug: No operation error
                 return;
             }
 
@@ -832,10 +870,12 @@
 
                 if (percentage && (percentage <= 0 || percentage > 1000)) {
                     showMessageBox('Percentage must be between 1 and 1000.');
+                    console.error('Validation failed: Invalid percentage.'); // Debug: Invalid percentage
                     return;
                 }
                 if ((width && width <= 0) || (height && height <= 0)) {
                     showMessageBox('Width and Height must be positive numbers.');
+                    console.error('Validation failed: Invalid width/height.'); // Debug: Invalid width/height
                     return;
                 }
             }
@@ -844,6 +884,7 @@
             buttonText.textContent = 'Processing...';
             loader.classList.remove('hidden');
             imageForm.querySelector('button[type="submit"]').disabled = false;
+            console.log('Starting file processing...'); // Debug: Processing started
 
             const formData = new FormData();
             formData.append('file', file);
@@ -858,7 +899,22 @@
                 // even if the display text is changed.
                 formData.append('quality_mode', document.querySelector('input[name="quality_mode"]:checked').value);
                 formData.append('jpeg_quality', jpegQualityInput.value);
+                console.log('FormData for resize:', {
+                    file: file.name,
+                    operation_type: operationType,
+                    width: widthInput.value,
+                    height: heightInput.value,
+                    percentage: percentageInput.value,
+                    quality_mode: document.querySelector('input[name="quality_mode"]:checked').value,
+                    jpeg_quality: jpegQualityInput.value
+                }); // Debug: FormData for resize
+            } else {
+                console.log('FormData for other operation:', {
+                    file: file.name,
+                    operation_type: operationType
+                }); // Debug: FormData for other operations
             }
+
 
             try {
                 const response = await fetch('/process', {
@@ -866,7 +922,10 @@
                     body: formData,
                 });
 
+                console.log('Fetch response status:', response.status); // Debug: Response status
+
                 const data = await response.json();
+                console.log('Response data:', data); // Debug: Full response data
 
                 if (data.success) {
                     originalFilenameSpan.textContent = data.original_filename;
@@ -902,24 +961,30 @@
                         singleDownloadLink.href = fileInfo.url;
                         singleDownloadLink.download = fileInfo.filename;
                         singleDownloadLink.classList.remove('hidden');
-
+                        console.log('Image resize successful. Displaying results.'); // Debug: Success
                     } else if (data.operation === 'pdf_to_image') {
                         processedFilesDisplay.innerHTML = `<p class="text-gray-700 mb-2"><strong>Processed Pages:</strong> ${data.processed_files.length}</p>`;
-                        processedImagesPreview.innerHTML = data.processed_files.map(fileInfo => `
-                            <div class="flex flex-col items-center p-2 border rounded-lg bg-white shadow-sm">
-                                <a href="${fileInfo.url}" target="_blank" class="block max-w-full h-auto rounded-lg mb-2">
-                                    <img src="${fileInfo.url}" alt="Page ${fileInfo.page_number}" class="max-w-full h-auto rounded-lg">
-                                </a>
-                                <!-- Removed individual download link -->
-                            </div>
-                        `).join('');
+                        // Display each image generated from the PDF
+                        processedImagesPreview.innerHTML = data.processed_files.map(fileInfo => {
+                            console.log(`PDF Page ${fileInfo.page_number} URL: ${fileInfo.url}, Filename: ${fileInfo.filename}`); // Debug: Log each PDF image URL
+                            return `
+                                <div class="flex flex-col items-center p-2 border rounded-lg bg-white shadow-sm">
+                                    <p class="text-sm font-medium text-gray-700 mb-1">Page ${fileInfo.page_number}</p>
+                                    <a href="${fileInfo.url}" target="_blank" class="block max-w-full h-auto rounded-lg mb-2">
+                                        <img src="${fileInfo.url}" alt="Page ${fileInfo.page_number}" class="max-w-full h-auto rounded-lg">
+                                    </a>
+                                    <a href="${fileInfo.url}" download="${fileInfo.filename}" class="text-indigo-600 hover:underline text-sm">Download Page</a>
+                                </div>
+                            `;
+                        }).join('');
                         // Show the "Download All" button
                         if (data.download_all_url) {
                             downloadAllPdfImagesLink.href = data.download_all_url;
                             downloadAllPdfImagesLink.download = `processed_pdf_images.zip`; // Suggest a generic name
                             downloadAllPdfImagesLink.classList.remove('hidden');
+                            console.log(`Download All PDF Images URL: ${data.download_all_url}`); // Debug: Log zip URL
                         }
-
+                        console.log('PDF to image successful. Displaying results and zip link.'); // Debug: Success
                     } else if (data.operation === 'image_to_pdf') {
                         const fileInfo = data.processed_files[0];
                         processedFilesDisplay.innerHTML = `
@@ -937,6 +1002,7 @@
                         singleDownloadLink.href = fileInfo.url;
                         singleDownloadLink.download = fileInfo.filename;
                         singleDownloadLink.classList.remove('hidden');
+                        console.log('Image to PDF successful. Displaying results.'); // Debug: Success
                     }
 
                     resultContainer.classList.remove('hidden');
@@ -947,16 +1013,18 @@
                     showMessageBox(data.error || 'An unknown error occurred.');
                     resultContainer.classList.add('hidden');
                     resultContainer.classList.remove('result-container-animation');
+                    console.error('Server returned an error:', data.error); // Debug: Server error
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showMessageBox('Failed to connect to the server. Please try again.');
+                console.error('Error during fetch operation:', error); // Debug: Network/Fetch error
+                showMessageBox('Failed to connect to the server or an unexpected error occurred. Please try again.');
                 resultContainer.classList.add('hidden');
                 resultContainer.classList.remove('result-container-animation');
             } finally {
                 buttonText.textContent = 'Process File';
                 loader.classList.add('hidden');
                 imageForm.querySelector('button[type="submit"]').disabled = false;
+                console.log('Processing finished. Button state reset.'); // Debug: Final state
             }
         });
 
@@ -990,6 +1058,7 @@
         imageToPdfOptions.classList.add('hidden');
         jpegQualityContainer.classList.add('hidden');
         fileInput.removeAttribute('required'); // Remove required from HTML as JS handles validation
+        console.log('Page initialized.'); // Debug: Page loaded
     </script>
 </body>
 </html>
