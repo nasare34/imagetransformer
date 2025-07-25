@@ -275,6 +275,10 @@ def serve_processed_file(filename):
     """Serves processed files from the PROCESSED_FOLDER."""
     return send_from_directory(app.config['PROCESSED_FOLDER'], filename)
 
+@app.route('/ads.txt')
+def ads_txt():
+    return send_from_directory('static', 'ads.txt')
+
 
 if __name__ == '__main__':
     # Initial cleanup on startup
