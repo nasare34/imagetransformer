@@ -17,8 +17,7 @@
             display: flex;
             flex-direction: column; /* Stack header, main content, footer */
             align-items: center;
-            /* Changed justify-content to space-between to push footer to bottom */
-            justify-content: space-between;
+            justify-content: space-between; /* Push footer to bottom */
             padding: 1rem; /* Add back some padding for overall layout */
             overflow-x: hidden; /* Prevent horizontal scroll due to animations */
         }
@@ -56,6 +55,26 @@
             transform: translateY(-1px);
         }
 
+        /* Main Layout Container for content and side ads */
+        .main-layout-container {
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            align-items: center; /* Center items in column layout */
+            width: 100%;
+            flex-grow: 1; /* Allow it to grow and push footer down */
+            max-width: 90rem; /* Max width for the entire layout (content + ads) */
+            margin: 0 auto; /* Center the container */
+            padding: 0 1rem; /* Add horizontal padding */
+        }
+
+        @media (min-width: 1024px) { /* On large screens (lg) and up */
+            .main-layout-container {
+                flex-direction: row; /* Switch to row for side-by-side */
+                justify-content: center; /* Center the main content and sidebars */
+                align-items: flex-start; /* Align items to the top */
+                gap: 2rem; /* Space between columns */
+            }
+        }
 
         /* Main Content Area - now directly centers the card */
         .content-area {
@@ -64,6 +83,33 @@
             justify-content: center;
             align-items: flex-start; /* Align card to top within its flex container */
             width: 100%; /* Take full width */
+            max-width: 48rem; /* Max width for content within the card, on small screens */
+            margin-bottom: 2rem; /* Space between card and footer */
+        }
+
+        @media (min-width: 1024px) { /* On large screens (lg) and up */
+            .content-area {
+                flex-shrink: 0; /* Prevent shrinking */
+                width: auto; /* Let content size itself */
+            }
+        }
+
+        /* Ad Sidebar styles */
+        .ad-sidebar {
+            display: none; /* Hidden by default on small screens */
+            flex-direction: column;
+            gap: 1rem; /* Space between ad units */
+            flex-shrink: 0; /* Prevent shrinking */
+            width: 160px; /* Fixed width for side ads */
+            min-width: 160px; /* Ensure it doesn't get smaller */
+            max-width: 160px; /* Ensure it doesn't get larger */
+            padding-top: 2rem; /* Align ads with the top of the card */
+        }
+
+        @media (min-width: 1024px) { /* Show sidebars on large screens */
+            .ad-sidebar {
+                display: flex;
+            }
         }
 
         /* Custom styles for better aesthetics and "3D" feel */
@@ -80,7 +126,6 @@
             transform: translateY(20px) scale(0.98); /* Start slightly down and scaled */
             width: 100%; /* Ensure card takes full width of its container */
             max-width: 48rem; /* Max width for content within the card */
-            margin-bottom: 2rem; /* Space between card and footer */
         }
         .card:hover {
             transform: translateY(-5px) scale(1.0); /* Subtle lift on hover */
@@ -248,7 +293,6 @@
         footer {
             width: 100%;
             max-width: 48rem; /* Match card max-width for alignment */
-            /* Removed margin-top to allow flex-grow on content-area to push it */
             padding: 1rem; /* Add padding to footer */
             flex-shrink: 0; /* Prevent footer from shrinking */
         }
@@ -354,238 +398,315 @@
         </nav>
     </header>
 
-    <!-- Main Content Area -->
-    <div class="content-area">
-        <div class="card w-full max-w-3xl">
-            <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-4">
-                Welcome to Flash Image Transformer!
-            </h1>
-            <p class="text-xl text-center text-gray-600 mb-10">
-                Your go-to site to resize, reduce, or increase the size and resolution of all your images, and convert between PDF and image formats.
-            </p>
-
-            <form id="imageForm" class="space-y-8">
-                <!-- Upload Section (always visible) -->
-                <div id="upload-section">
-                    <h2 class="text-2xl font-semibold section-heading mb-4">Upload File</h2>
-                    <!-- Drag and Drop Zone -->
-                    <div id="dropZone" class="drop-zone">
-                        <p class="text-lg font-medium text-gray-700 mb-2">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i><br>
-                            Drag & Drop your file here, or
-                        </p>
-                        <label for="fileInput" class="btn-secondary inline-flex items-center px-4 py-2">
-                            <i class="fas fa-folder-open mr-2"></i> Browse Files
-                        </label>
-                        <input type="file" id="fileInput" name="file" class="input-field">
-                        <p class="text-sm text-gray-500 mt-2" id="fileTypeHint">Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs</p>
-                        <!-- NEW: Automatic compression message -->
-                        <p class="text-sm text-gray-500 mt-2">
-                            <i class="fas fa-info-circle mr-1"></i> Large images (MBs) will be automatically compressed to KBs for optimal web use if no specific resizing options are chosen.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Operation Type Selection (initially hidden, shown after file upload) -->
-                <div id="operationSelectionSection" class="hidden">
-                    <h2 class="text-2xl font-semibold section-heading mb-4">Choose Operation</h2>
-                    <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
-                        <label>
-                            <input type="radio" name="operation_type" value="resize_image">
-                            <span>Resize Image</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="operation_type" value="pdf_to_image">
-                            <span>PDF to Image</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="operation_type" value="image_to_pdf">
-                            <span>Image to PDF</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Image Resize Options (Initially hidden) -->
-                <div id="imageResizeOptions" class="hidden">
-                    <h2 class="text-2xl font-semibold section-heading mb-4">Image Resizing Options</h2>
-                    <p class="text-gray-600 mb-4">Easily resize for popular social media platforms or define custom dimensions.</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                        <button type="button" class="preset-button" data-width="1280" data-height="720" data-name="YouTube Thumbnail">
-                            <i class="fab fa-youtube"></i>
-                            <span>YouTube Thumbnail</span>
-                            <span class="text-xs text-gray-500 mt-1">1280x720px</span>
-                        </button>
-                        <button type="button" class="preset-button" data-width="1080" data-height="1080" data-name="Instagram Square">
-                            <i class="fab fa-instagram"></i>
-                            <span>Instagram Square</span>
-                            <span class="text-xs text-gray-500 mt-1">1080x1080px</span>
-                        </button>
-                        <button type="button" class="preset-button" data-width="1080" data-height="1920" data-name="TikTok Video">
-                            <i class="fab fa-tiktok"></i>
-                            <span>TikTok Video</span>
-                            <span class="text-xs text-gray-500 mt-1">1080x1920px</span>
-                        </button>
-                        <button type="button" class="preset-button" data-width="1200" data-height="630" data-name="Facebook Post">
-                            <i class="fab fa-facebook"></i>
-                            <span>Facebook Post</span>
-                            <span class="text-xs text-gray-500 mt-1">1200x630px</span>
-                        </button>
-                        <!-- NEW: Passport Size Preset -->
-                        <button type="button" class="preset-button" data-width="1062" data-height="862" data-name="Passport Size">
-                            <i class="fas fa-id-card"></i>
-                            <span>Passport Size</span>
-                            <span class="text-xs text-gray-500 mt-1">1062x862px</span>
-                        </button>
-                        <!-- Add more presets as needed -->
-                    </div>
-
-                    <h3 class="text-xl font-medium text-gray-700 mb-4">Custom Resizing</h3>
-                    <p class="text-gray-600 mb-4">Define your own dimensions or scale by percentage.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label for="widthInput" class="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
-                            <input type="number" id="widthInput" name="width" class="input-field" placeholder="e.g., 800">
-                            <p class="text-xs text-gray-500 mt-1">Sets the desired width in pixels.</p>
-                        </div>
-                        <div>
-                            <label for="heightInput" class="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
-                            <input type="number" id="heightInput" name="height" class="input-field" placeholder="e.g., 600">
-                            <p class="text-xs text-gray-500 mt-1">Sets the desired height in pixels.</p>
-                        </div>
-                        <div>
-                            <label for="percentageInput" class="block text-sm font-medium text-gray-700 mb-1">Percentage (%)</label>
-                            <input type="number" id="percentageInput" name="percentage" class="input-field" placeholder="e.g., 50">
-                            <p class="text-xs text-gray-500 mt-1">Scales the image by a percentage of its original size (e.g., 50 for half, 200 for double).</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-2">Enter dimensions or a percentage. Percentage takes precedence if both are provided.</p>
-
-                    <h3 class="text-xl font-medium text-gray-700 mt-8 mb-4">Quality Settings</h3>
-                    <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
-                        <label>
-                            <input type="radio" name="quality_mode" value="lossless" checked>
-                            <span>High Quality (PNG)</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="quality_mode" value="lossy">
-                            <span>Compressed (JPEG)</span>
-                        </label>
-                    </div>
-
-                    <div id="jpegQualityContainer" class="hidden">
-                        <label for="jpegQuality" class="block text-sm font-medium text-gray-700 mb-1">JPEG Quality (1-95)</label>
-                        <input type="range" id="jpegQuality" name="jpeg_quality" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg" value="85" min="1" max="95">
-                        <span id="jpegQualityValue" class="block text-center text-sm text-gray-600 mt-2">85</span>
-                    </div>
-                </div>
-
-                <!-- PDF to Image Options (Hidden by default) -->
-                <div id="pdfToImageOptions" class="hidden">
-                    <h2 class="text-2xl font-semibold section-heading mb-4">PDF to Image Options</h2>
-                    <p class="text-gray-600 mb-4">Each page of your PDF will be converted into a separate image file (PNG).</p>
-                    <!-- No specific options needed here for simplicity, conversion is direct -->
-                </div>
-
-                <!-- Image to PDF Options (Hidden by default) -->
-                <div id="imageToPdfOptions" class="hidden">
-                    <h2 class="text-2xl font-semibold section-heading mb-4">Image to PDF Options</h2>
-                    <p class="text-gray-600 mb-4">Your image will be converted into a single-page PDF document.</p>
-                    <!-- No specific options needed here for simplicity, conversion is direct -->
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <button type="submit" class="btn-primary flex-grow flex items-center justify-center space-x-2">
-                        <span id="buttonText">Process File</span>
-                        <div id="loader" class="loader hidden"></div>
-                    </button>
-                    <button type="button" id="clearFormButton" class="btn-secondary flex-grow">
-                        Clear Form
-                    </button>
-                </div>
-            </form>
-
-            <div id="messageBox" class="mt-8 p-4 message-box bg-red-100 border border-red-400 text-red-700 rounded-lg hidden" role="alert">
-                <!-- Error messages will be displayed here -->
+    <!-- Main Layout Container for content and side ads -->
+    <div class="main-layout-container">
+        <!-- Left Ad Sidebar -->
+        <aside class="ad-sidebar left-ad-sidebar">
+            <div class="ad-space">
+                <!-- AdSense Ad Unit 1 (e.g., 160x600 or responsive vertical) -->
+                <ins class="adsbygoogle"
+                     style="display:block; width:160px; height:600px;"
+                     data-ad-client="ca-pub-4822709639849516"
+                     data-ad-slot="YOUR_AD_SLOT_ID_1"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
-
-            <div id="resultContainer" class="mt-10 hidden">
-                <h2 class="text-3xl font-semibold text-gray-800 mb-6 section-heading">Processed Result</h2>
-                <div class="bg-gray-100 p-6 rounded-xl mb-6 shadow-inner">
-                    <!-- Added flex and break-words for better wrapping on small screens -->
-                    <p class="text-gray-700 mb-2 flex flex-wrap">
-                        <strong class="mr-1">Original File:</strong>
-                        <span id="originalFilename" class="break-all"></span>
-                    </p>
-                    <div id="processedFilesDisplay">
-                        <!-- Processed file details will be inserted here -->
-                        <!-- Dynamically inserted content will also need break-all if it contains filenames -->
-                    </div>
-                </div>
-                <div id="processedImagesPreview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                    <!-- Processed images/PDF links will be displayed here -->
-                </div>
-                <!-- Download button will be dynamically added/updated -->
-                <a id="singleDownloadLink" href="#" download class="btn-primary w-full text-center block hidden">Download Processed File</a>
-                <!-- New: Download All button for PDF to Image -->
-                <a id="downloadAllPdfImagesLink" href="#" download class="btn-primary w-full text-center block hidden mt-4">Download All Images as Zip</a>
+            <div class="ad-space">
+                <!-- AdSense Ad Unit 2 (e.g., another 160x600 or responsive vertical) -->
+                <ins class="adsbygoogle"
+                     style="display:block; width:160px; height:600px;"
+                     data-ad-client="ca-pub-4822709639849516"
+                     data-ad-slot="YOUR_AD_SLOT_ID_2"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
+            <!-- Moneytag Ad Unit 1 -->
+            <div class="ad-space">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : 'YOUR_MONEYTAG_AD_KEY_1',
+                        'format' : 'iframe',
+                        'height' : 600,
+                        'width' : 160,
+                        'params' : {}
+                    };
+                    document.write('<scr' + 'ipt type="text/javascript" src="//www.profitabledisplaynetwork.com/YOUR_MONEYTAG_AD_KEY_1/invoke.js"></scr' + 'ipt>');
+                </script>
+            </div>
+        </aside>
 
-            <!-- FAQ Section -->
-            <div class="mt-12">
-                <h2 class="text-3xl font-semibold section-heading mb-6">Frequently Asked Questions (FAQ)</h2>
-                <div class="space-y-4">
-                    <div class="faq-item">
-                        <div class="faq-question" data-faq-answer="faq1">
-                            <span>Can I resize a photo for Instagram or Facebook?</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </div>
-                        <div id="faq1" class="faq-answer">
-                            <p>Easily resize an image for your preferred social media channel using the preset options. Choose from available sizes, including Instagram Square or TikTok Video, that meet each platform’s optimal size requirements.</p>
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <div class="card w-full max-w-3xl">
+                <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-4">
+                    Welcome to Flash Image Transformer!
+                </h1>
+                <p class="text-xl text-center text-gray-600 mb-10">
+                    Your go-to site to resize, reduce, or increase the size and resolution of all your images, and convert between PDF and image formats.
+                </p>
+
+                <form id="imageForm" class="space-y-8">
+                    <!-- Upload Section (always visible) -->
+                    <div id="upload-section">
+                        <h2 class="text-2xl font-semibold section-heading mb-4">Upload File</h2>
+                        <!-- Drag and Drop Zone -->
+                        <div id="dropZone" class="drop-zone">
+                            <p class="text-lg font-medium text-gray-700 mb-2">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i><br>
+                                Drag & Drop your file here, or
+                            </p>
+                            <label for="fileInput" class="btn-secondary inline-flex items-center px-4 py-2">
+                                <i class="fas fa-folder-open mr-2"></i> Browse Files
+                            </label>
+                            <input type="file" id="fileInput" name="file" class="input-field">
+                            <p class="text-sm text-gray-500 mt-2" id="fileTypeHint">Supported: Images (PNG, JPG, JPEG, GIF, WebP) & PDFs</p>
+                            <!-- NEW: Automatic compression message -->
+                            <p class="text-sm text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i> Large images (MBs) will be automatically compressed to KBs for optimal web use if no specific resizing options are chosen.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" data-faq-answer="faq2">
-                            <span>How can I resize a photo without losing image quality?</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </div>
-                        <div id="faq2" class="faq-answer">
-                            <p>Sizing down shouldn’t significantly reduce image quality, but sizing up can. If you select a preset size to resize your image and it might affect the image quality, you’ll notice that the resulting image might show some degradation, especially when viewed at larger scales. Try to resize images to smaller dimensions or use the 'High Quality (PNG)' quality mode to maintain as much quality as possible. The tool uses a high-quality resampling algorithm (LANCZOS) to minimize quality loss during resizing.</p>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question" data-faq-answer="faq3">
-                            <span>Can I resize a photo on my phone?</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </div>
-                        <div id="faq3" class="faq-answer">
-                            <p>Absolutely. This web application is designed to be fully responsive, allowing you to quickly and easily resize images on the go using your mobile device – no app download is necessary. Simply open the site in your mobile browser.</p>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question" data-faq-answer="faq4">
-                            <span>Can vector images be resized?</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </div>
-                        <div id="faq4" class="faq-answer">
-                            <p>Currently, the image resize tool supports raster images in JPG, PNG, GIF, and WebP formats. Vector image formats (like SVG, AI, EPS) are not directly supported for resizing within this tool, as they require specialized vector editing software.</p>
+                    <!-- Operation Type Selection (initially hidden, shown after file upload) -->
+                    <div id="operationSelectionSection" class="hidden">
+                        <h2 class="text-2xl font-semibold section-heading mb-4">Choose Operation</h2>
+                        <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
+                            <label>
+                                <input type="radio" name="operation_type" value="resize_image">
+                                <span>Resize Image</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="operation_type" value="pdf_to_image">
+                                <span>PDF to Image</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="operation_type" value="image_to_pdf">
+                                <span>Image to PDF</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" data-faq-answer="faq5">
-                            <span>Can I use Flash Image Transformer for free? If so, what’s included?</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
+                    <!-- Image Resize Options (Initially hidden) -->
+                    <div id="imageResizeOptions" class="hidden">
+                        <h2 class="text-2xl font-semibold section-heading mb-4">Image Resizing Options</h2>
+                        <p class="text-gray-600 mb-4">Easily resize for popular social media platforms or define custom dimensions.</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                            <button type="button" class="preset-button" data-width="1280" data-height="720" data-name="YouTube Thumbnail">
+                                <i class="fab fa-youtube"></i>
+                                <span>YouTube Thumbnail</span>
+                                <span class="text-xs text-gray-500 mt-1">1280x720px</span>
+                            </button>
+                            <button type="button" class="preset-button" data-width="1080" data-height="1080" data-name="Instagram Square">
+                                <i class="fab fa-instagram"></i>
+                                <span>Instagram Square</span>
+                                <span class="text-xs text-gray-500 mt-1">1080x1080px</span>
+                            </button>
+                            <button type="button" class="preset-button" data-width="1080" data-height="1920" data-name="TikTok Video">
+                                <i class="fab fa-tiktok"></i>
+                                <span>TikTok Video</span>
+                                <span class="text-xs text-gray-500 mt-1">1080x1920px</span>
+                            </button>
+                            <button type="button" class="preset-button" data-width="1200" data-height="630" data-name="Facebook Post">
+                                <i class="fab fa-facebook"></i>
+                                <span>Facebook Post</span>
+                                <span class="text-xs text-gray-500 mt-1">1200x630px</span>
+                            </button>
+                            <!-- NEW: Passport Size Preset -->
+                            <button type="button" class="preset-button" data-width="1062" data-height="862" data-name="Passport Size">
+                                <i class="fas fa-id-card"></i>
+                                <span>Passport Size</span>
+                                <span class="text-xs text-gray-500 mt-1">1062x862px</span>
+                            </button>
+                            <!-- Add more presets as needed -->
                         </div>
-                        <div id="faq5" class="faq-answer">
-                            <p>Yes, Flash Image Transformer is a completely free-to-use web application. You can enjoy all its features, including image resizing, quality adjustment, PDF to image conversion, and image to PDF conversion, without any cost or limitations on usage. There are no premium plans or hidden fees.</p>
+
+                        <h3 class="text-xl font-medium text-gray-700 mb-4">Custom Resizing</h3>
+                        <p class="text-gray-600 mb-4">Define your own dimensions or scale by percentage.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="widthInput" class="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                                <input type="number" id="widthInput" name="width" class="input-field" placeholder="e.g., 800">
+                                <p class="text-xs text-gray-500 mt-1">Sets the desired width in pixels.</p>
+                            </div>
+                            <div>
+                                <label for="heightInput" class="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                                <input type="number" id="heightInput" name="height" class="input-field" placeholder="e.g., 600">
+                                <p class="text-xs text-gray-500 mt-1">Sets the desired height in pixels.</p>
+                            </div>
+                            <div>
+                                <label for="percentageInput" class="block text-sm font-medium text-gray-700 mb-1">Percentage (%)</label>
+                                <input type="number" id="percentageInput" name="percentage" class="input-field" placeholder="e.g., 50">
+                                <p class="text-xs text-gray-500 mt-1">Scales the image by a percentage of its original size (e.g., 50 for half, 200 for double).</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Enter dimensions or a percentage. Percentage takes precedence if both are provided.</p>
+
+                        <h3 class="text-xl font-medium text-gray-700 mt-8 mb-4">Quality Settings</h3>
+                        <div class="radio-group flex flex-col sm:flex-row sm:space-x-8">
+                            <label>
+                                <input type="radio" name="quality_mode" value="lossless" checked>
+                                <span>High Quality (PNG)</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="quality_mode" value="lossy">
+                                <span>Compressed (JPEG)</span>
+                            </label>
+                        </div>
+
+                        <div id="jpegQualityContainer" class="hidden">
+                            <label for="jpegQuality" class="block text-sm font-medium text-gray-700 mb-1">JPEG Quality (1-95)</label>
+                            <input type="range" id="jpegQuality" name="jpeg_quality" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg" value="85" min="1" max="95">
+                            <span id="jpegQualityValue" class="block text-center text-sm text-gray-600 mt-2">85</span>
+                        </div>
+                    </div>
+
+                    <!-- PDF to Image Options (Hidden by default) -->
+                    <div id="pdfToImageOptions" class="hidden">
+                        <h2 class="text-2xl font-semibold section-heading mb-4">PDF to Image Options</h2>
+                        <p class="text-gray-600 mb-4">Each page of your PDF will be converted into a separate image file (PNG).</p>
+                        <!-- No specific options needed here for simplicity, conversion is direct -->
+                    </div>
+
+                    <!-- Image to PDF Options (Hidden by default) -->
+                    <div id="imageToPdfOptions" class="hidden">
+                        <h2 class="text-2xl font-semibold section-heading mb-4">Image to PDF Options</h2>
+                        <p class="text-gray-600 mb-4">Your image will be converted into a single-page PDF document.</p>
+                        <!-- No specific options needed here for simplicity, conversion is direct -->
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button type="submit" class="btn-primary flex-grow flex items-center justify-center space-x-2">
+                            <span id="buttonText">Process File</span>
+                            <div id="loader" class="loader hidden"></div>
+                        </button>
+                        <button type="button" id="clearFormButton" class="btn-secondary flex-grow">
+                            Clear Form
+                        </button>
+                    </div>
+                </form>
+
+                <div id="messageBox" class="mt-8 p-4 message-box bg-red-100 border border-red-400 text-red-700 rounded-lg hidden" role="alert">
+                    <!-- Error messages will be displayed here -->
+                </div>
+
+                <div id="resultContainer" class="mt-10 hidden">
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6 section-heading">Processed Result</h2>
+                    <div class="bg-gray-100 p-6 rounded-xl mb-6 shadow-inner">
+                        <!-- Added flex and break-words for better wrapping on small screens -->
+                        <p class="text-gray-700 mb-2 flex flex-wrap">
+                            <strong class="mr-1">Original File:</strong>
+                            <span id="originalFilename" class="break-all"></span>
+                        </p>
+                        <div id="processedFilesDisplay">
+                            <!-- Processed file details will be inserted here -->
+                            <!-- Dynamically inserted content will also need break-all if it contains filenames -->
+                        </div>
+                    </div>
+                    <div id="processedImagesPreview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                        <!-- Processed images/PDF links will be displayed here -->
+                    </div>
+                    <!-- Download button will be dynamically added/updated -->
+                    <a id="singleDownloadLink" href="#" download class="btn-primary w-full text-center block hidden">Download Processed File</a>
+                    <!-- New: Download All button for PDF to Image -->
+                    <a id="downloadAllPdfImagesLink" href="#" download class="btn-primary w-full text-center block hidden mt-4">Download All Images as Zip</a>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="mt-12">
+                    <h2 class="text-3xl font-semibold section-heading mb-6">Frequently Asked Questions (FAQ)</h2>
+                    <div class="space-y-4">
+                        <div class="faq-item">
+                            <div class="faq-question" data-faq-answer="faq1">
+                                <span>Can I resize a photo for Instagram or Facebook?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div id="faq1" class="faq-answer">
+                                <p>Easily resize an image for your preferred social media channel using the preset options. Choose from available sizes, including Instagram Square or TikTok Video, that meet each platform’s optimal size requirements.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" data-faq-answer="faq2">
+                                <span>How can I resize a photo without losing image quality?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div id="faq2" class="faq-answer">
+                                <p>Sizing down shouldn’t significantly reduce image quality, but sizing up can. If you select a preset size to resize your image and it might affect the image quality, you’ll notice that the resulting image might show some degradation, especially when viewed at larger scales. Try to resize images to smaller dimensions or use the 'High Quality (PNG)' quality mode to maintain as much quality as possible. The tool uses a high-quality resampling algorithm (LANCZOS) to minimize quality loss during resizing.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" data-faq-answer="faq3">
+                                <span>Can I resize a photo on my phone?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div id="faq3" class="faq-answer">
+                                <p>Absolutely. This web application is designed to be fully responsive, allowing you to quickly and easily resize images on the go using your mobile device – no app download is necessary. Simply open the site in your mobile browser.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" data-faq-answer="faq4">
+                                <span>Can vector images be resized?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div id="faq4" class="faq-answer">
+                                <p>Currently, the image resize tool supports raster images in JPG, PNG, GIF, and WebP formats. Vector image formats (like SVG, AI, EPS) are not directly supported for resizing within this tool, as they require specialized vector editing software.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" data-faq-answer="faq5">
+                                <span>Can I use Flash Image Transformer for free? If so, what’s included?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div id="faq5" class="faq-answer">
+                                <p>Yes, Flash Image Transformer is a completely free-to-use web application. You can enjoy all its features, including image resizing, quality adjustment, PDF to image conversion, and image to PDF conversion, without any cost or limitations on usage. There are no premium plans or hidden fees.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Right Ad Sidebar -->
+        <aside class="ad-sidebar right-ad-sidebar">
+            <div class="ad-space">
+                <!-- AdSense Ad Unit 3 (e.g., 160x600 or responsive vertical) -->
+                <ins class="adsbygoogle"
+                     style="display:block; width:160px; height:600px;"
+                     data-ad-client="ca-pub-4822709639849516"
+                     data-ad-slot="YOUR_AD_SLOT_ID_3"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <div class="ad-space">
+                <!-- AdSense Ad Unit 4 (e.g., another 160x600 or responsive vertical) -->
+                <ins class="adsbygoogle"
+                     style="display:block; width:160px; height:600px;"
+                     data-ad-client="ca-pub-4822709639849516"
+                     data-ad-slot="YOUR_AD_SLOT_ID_4"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <!-- Moneytag Ad Unit 2 -->
+            <div class="ad-space">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : 'YOUR_MONEYTAG_AD_KEY_2',
+                        'format' : 'iframe',
+                        'height' : 600,
+                        'width' : 160,
+                        'params' : {}
+                    };
+                    document.write('<scr' + 'ipt type="text/javascript" src="//www.profitabledisplaynetwork.com/YOUR_MONEYTAG_AD_KEY_2/invoke.js"></scr' + 'ipt>');
+                </script>
+            </div>
+        </aside>
     </div>
 
     <footer class="mt-10 p-6 text-center text-gray-600 w-full max-w-3xl">
@@ -595,12 +716,7 @@
             <a href="/about">About</a>
             <a href="/contact">Contact</a>
         </div>
-        <!-- AdSense auto ad space -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="ad-space"></div>
-            <div class="ad-space"></div>
-        </div>
-        <div class="ad-space ad-space-large mt-4"></div>
+        <!-- Removed ad-space divs from footer -->
     </footer>
 
     <script>
